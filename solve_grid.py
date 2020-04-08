@@ -1,4 +1,5 @@
 import logging
+import yaml
 logging.basicConfig(level='INFO')
 
 class solve_grid(object):
@@ -62,15 +63,9 @@ class solve_grid(object):
 
 
 if __name__ == '__main__':
-    grid=[[3,0,6,5,0,8,4,0,0],
-      [5,2,0,0,0,0,0,0,0],
-      [0,8,7,0,0,0,0,3,1],
-      [0,0,3,0,1,0,0,8,0],
-      [9,0,0,8,6,3,0,0,5],
-      [0,5,0,0,9,0,6,0,0],
-      [1,3,0,0,0,0,2,5,0],
-      [0,0,0,0,0,0,0,7,4],
-      [0,0,5,2,0,6,3,0,0]]
+    with open('grid.yaml','r') as file:
+        documents = yaml.full_load(file)
+    grid=[i for items, doc in documents.items() for i in doc]
 
     solve_me = solve_grid(grid)
     if(solve_me.solve()):
