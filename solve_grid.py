@@ -1,6 +1,8 @@
 import logging
 import yaml
-logging.basicConfig(level='INFO')
+import argparse
+import sys
+from os import path
 
 class solve_grid(object):
     def __init__(self, grid):
@@ -10,19 +12,16 @@ class solve_grid(object):
         self.row_size=len(self.grid[0])
 
     def get_empty_coordinates(self):
-        xy=[]
-        for i in range(self.column_size):
-            for j in range(self.row_size):
-                if self.grid[i][j] == 0:
-                    xy.append((i,j))
-        return xy
+        return [(i,j) for i in range(self.column_size) for j in range(self.row_size) if self.grid[i][j] == 0]
 
-    def get_empty_location(self,l):
+
+    def get_empty_location(self,grid):
+        return_val=False
         for items in self.get_empty_coordinates():
-            l[0]=items[0]
-            l[1]=items[1]
-            return True
-        return False
+            grid[0]=items[0]
+            grid[1]=items[1]
+            return_val=True
+        return return_val
 
     def possible_row_values(self, r):
         if r <= self.row_size:
@@ -33,44 +32,57 @@ class solve_grid(object):
             return (set(self.list_of_possible_val)- set([row[c] for row in self.grid]))
 
     def possible_cube_values(self, r, c):
-        list_of_cube=[]
         r0 = (r//3)*3
         c0 = (c//3)*3
-        for i in range(0,3):
-            for j in range(0,3):
-                list_of_cube.append(self.grid[r0+i][c0+j])
-        return (set(self.list_of_possible_val)- set(list_of_cube))
+        return (set(self.list_of_possible_val) - set([self.grid[r0+i][c0+j] for i in range(0,3) for j in range(0,3)]))
+
 
     def check_if_number_is_valid_for_location(self,r,c, value):
         return value in self.possible_row_values(r) and value in self.possible_column_values(c) and value in self.possible_cube_values(r,c)
 
 
     def solve(self):
-        l=[0,0]
-        if(not self.get_empty_location(l)):
+        grid_num=[0,0]
+
+        if(not self.get_empty_location(grid_num)):
             return True
 
-        row=l[0]
-        col=l[1]
-
         for num in range(1,10):
-            if(self.check_if_number_is_valid_for_location(row,col,num)):
-                self.grid[row][col]=num
+            if(self.check_if_number_is_valid_for_location(grid_num[0],grid_num[1],num)):
+                self.grid[grid_num[0]][grid_num[1]]=num
                 if(self.solve()):
                     return True
-                self.grid[row][col] = 0
+                self.grid[grid_num[0]][grid_num[1]] = 0
         return False
 
 
 if __name__ == '__main__':
-    with open('grid.yaml','r') as file:
+    parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('-L','--loglevel', type=str, default="INFO",  help="default logging enabled")
+    parser.add_argument('-G','--grid', required=True, help="path to grid yaml file")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    logging.basicConfig(level=args.loglevel, format='%(asctime)s %(levelname)s %(funcName)s:%(lineno)d %(message)s',
+                        stream=sys.stdout)
+
+    if not path.isfile(args.grid):
+        logging.info(f"File not exist {args.grid}")
+
+    with open(args.grid,'r') as file:
         documents = yaml.full_load(file)
     grid=[i for items, doc in documents.items() for i in doc]
 
     solve_me = solve_grid(grid)
     if(solve_me.solve()):
-        print(grid)
+        logging.info(grid)
     else:
-        print("No solution exists")
+        logging.info(f"Solution cannot be reached {grid}")
+
 
 
