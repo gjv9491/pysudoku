@@ -55,8 +55,7 @@ class solve_grid(object):
                 self.grid[grid_num[0]][grid_num[1]] = 0
         return False
 
-
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-L','--loglevel', type=str, default="INFO",  help="default logging enabled")
@@ -83,6 +82,9 @@ if __name__ == '__main__':
         logging.info(grid)
     else:
         logging.info(f"Solution cannot be reached {grid}")
+
+if __name__ == '__main__':
+    main()
 
 
 
